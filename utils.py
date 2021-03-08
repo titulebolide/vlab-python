@@ -1,14 +1,16 @@
 import os
+from geomdl import BSpline, knotvector
+import numpy as np
 
 def clean_files():
     for fname in ('xf_input.txt', 'xf_output.txt', 'xf_airfoil.txt', ':00.bl'):
         if os.path.exists(fname):
             os.remove(fname)
 
-def cd_cl(m, p, t, alpha):
+def cd_cl(airfoil, alpha):
     clean_files()
 
-    af_x, af_y = naca4(m,p,t)
+    af_x, af_y = airfoil
     with open('xf_airfoil.txt', 'w') as f:
         f.write('NACA Airfoil')
         for i in range(len(af_x)):
@@ -24,10 +26,6 @@ PACC
 xf_output.txt
 
 a {alpha}
-!
-!
-!
-!
 !
 !
 
@@ -67,7 +65,7 @@ from math import sqrt
 def linspace(start,stop,np):
     return [start+(stop-start)*i/(np-1) for i in range(np)]
 
-def naca4(m,p,t, n=400, finite_TE = False, half_cosine_spacing = False):
+def naca4(m, p, t, n=400, finite_TE = False, half_cosine_spacing = False):
     """
     Returns 2*n+1 points in [0 1] for the given 4 digit NACA number string
     """
@@ -127,3 +125,19 @@ def naca4(m,p,t, n=400, finite_TE = False, half_cosine_spacing = False):
     Z = yu[::-1] + yl[1:]
 
     return X,Z
+
+def nurbs(suc,pre,n=400):
+    assert len(suc)==len(pre)
+    xs = np.linspace(0,1,len(suc)+2).tolist()
+    pts = np.array([
+        xs[::-1] + xs[1:],
+        [0] + suc[::-1] + [0] + pre + [0]
+    ]).transpose().tolist()
+    crv=BSpline.Curve()
+    crv.degree=2
+    crv.ctrlpts=pts
+    crv.knotvector = knotvector.generate(crv.degree, crv.ctrlpts_size)
+    airfoil = np.array([
+        crv.evaluate_single(t) for t in np.linspace(0,1,n)
+    ])
+    return airfoil[:,0],airfoil[:,1]
