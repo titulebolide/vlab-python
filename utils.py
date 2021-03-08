@@ -1,7 +1,7 @@
 import os
 
 def clean_files():
-    for fname in ('xf_input.txt', 'xf_output.txt', 'xf_airfoil.txt'):
+    for fname in ('xf_input.txt', 'xf_output.txt', 'xf_airfoil.txt', ':00.bl'):
         if os.path.exists(fname):
             os.remove(fname)
 
