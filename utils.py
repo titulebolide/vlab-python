@@ -1,23 +1,32 @@
 import os
+import subprocess
 from geomdl import BSpline, knotvector
 import numpy as np
 
-def clean_files():
-    for fname in ('xf_input.txt', 'xf_output.txt', 'xf_airfoil.txt', ':00.bl'):
-        if os.path.exists(fname):
-            os.remove(fname)
+class Xfoil:
+    def __init__(self):
+        self.x11serv = subprocess.Popen('Xvfb :2', shell=True)
 
-def cd_cl(airfoil, alpha):
-    clean_files()
+    def stop(self):
+        os.system('kill ${cat /tmp/.X2-lock}')
+        self.x11serv.kill()
 
-    af_x, af_y = airfoil
-    with open('xf_airfoil.txt', 'w') as f:
-        f.write('NACA Airfoil')
-        for i in range(len(af_x)):
-            f.write(f'\n{af_x[i]}  {af_y[i]}')
+    def clean_files(self):
+        for fname in ('xf_input.txt', 'xf_output.txt', 'xf_airfoil.txt', ':00.bl'):
+            if os.path.exists(fname):
+                os.remove(fname)
 
-    with open('xf_input.txt','w') as f:
-        f.write(f"""
+    def cd_cl(self, airfoil, alpha):
+        self.clean_files()
+
+        af_x, af_y = airfoil
+        with open('xf_airfoil.txt', 'w') as f:
+            f.write('NACA Airfoil')
+            for i in range(len(af_x)):
+                f.write(f'\n{af_x[i]}  {af_y[i]}')
+
+        with open('xf_input.txt','w') as f:
+            f.write(f"""
 load xf_airfoil.txt
 PANE
 OPER
@@ -31,29 +40,29 @@ a {alpha}
 
 QUIT
 """)
-    os.system('xfoil < xf_input.txt > /dev/null')
+        os.system('DISPLAY=:2 xfoil < xf_input.txt > /dev/null')
 
-    def parse_data(s):
-        def remove_multiple_space(s):
-            return s.replace('  ', ' ')
-        for _ in range(4):
-            s = remove_multiple_space(s)
-        if s.startswith(' '):
-            s = s[1:]
-        res = []
-        for i in s.split(' '):
-            try:
-                res.append(float(i))
-            except ValueError:
-                res.append(None)
-        return res
+        def parse_data(s):
+            def remove_multiple_space(s):
+                return s.replace('  ', ' ')
+            for _ in range(4):
+                s = remove_multiple_space(s)
+            if s.startswith(' '):
+                s = s[1:]
+            res = []
+            for i in s.split(' '):
+                try:
+                    res.append(float(i))
+                except ValueError:
+                    res.append(None)
+            return res
 
-    with open('xf_output.txt', 'r') as f:
-        alpha, cl, cd, cdp, cm, _,_,_,_ = parse_data(f.readlines()[-1])
+        with open('xf_output.txt', 'r') as f:
+            alpha, cl, cd, cdp, cm, _,_,_,_ = parse_data(f.readlines()[-1])
 
-    clean_files()
+        self.clean_files()
 
-    return cd, cl
+        return cd, cl
 
 
 from math import cos, sin, tan
