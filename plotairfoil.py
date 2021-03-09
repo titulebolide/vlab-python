@@ -1,12 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import vlab
 
 D = []
 L = []
 A = []
+
+xfoil = vlab.Xfoil()
+
 for alpha in np.arange(-3,10,0.5):
-    cd, cl = utils.cd_cl('0012', alpha)
+    cd, cl = xfoil.cd_cl(vlab.naca4(0,0,12), alpha)
     print(cd, cl)
     if cd is not None and cl is not None:
         D.append(cd)

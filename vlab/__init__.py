@@ -12,7 +12,7 @@ class Xfoil:
         self.x11serv.kill()
 
     def clean_files(self):
-        for fname in ('xf_input.txt', 'xf_output.txt', 'xf_airfoil.txt', ':00.bl'):
+        for fname in ('xf_input.txt', 'xf_output.txt', ':00.bl'):
             if os.path.exists(fname):
                 os.remove(fname)
 
@@ -20,14 +20,14 @@ class Xfoil:
         self.clean_files()
 
         af_x, af_y = airfoil
-        with open('xf_airfoil.txt', 'w') as f:
+        with open('xf_airfoil.dat', 'w') as f:
             f.write('NACA Airfoil')
             for i in range(len(af_x)):
                 f.write(f'\n{af_x[i]}  {af_y[i]}')
 
         with open('xf_input.txt','w') as f:
             f.write(f"""
-load xf_airfoil.txt
+load xf_airfoil.dat
 PANE
 OPER
 VISC 3e6

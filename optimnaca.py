@@ -1,14 +1,14 @@
-import utils
+import vlab
 import optuna
 
-xfoil = utils.Xfoil()
+xfoil = vlab.Xfoil()
 
 def objective(trial: optuna.Trial):
     m = trial.suggest_uniform("m", 0, 10)
     p = trial.suggest_uniform("p", 0, 10)
     t = trial.suggest_uniform("t", 0, 20)
     a = trial.suggest_uniform("a", -5, 10)
-    cd,cl = xfoil.cd_cl(utils.naca4(m,p,t),a)
+    cd,cl = xfoil.cd_cl(vlab.naca4(m,p,t),a)
     if cd is None or cl is None:
         cl,cd=0,1
 
